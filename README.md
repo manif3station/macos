@@ -63,7 +63,7 @@ d2 macos.skill
 
 `macos.ps` reports the configured VM name, Tart process ID, IP address, macOS version, start time, and elapsed runtime. During startup it explains the current step, shows the last log line and how long ago it changed, and reports whether SSH is reachable. It also shows startup elapsed time and, after a successful start, the previous startup duration with a rough remaining-time estimate. The first run has no estimate until a successful startup duration is recorded. It lists the guest processes with the highest CPU and memory use when the VM is ready.
 
-`macos.logs` prints the startup log and exits by default. Use `-f` to follow it, `--tail N` or `--tail=N` to select the last N lines, and `-t` to read the timestamped log. These options can be combined.
+`macos.logs` prints startup and guest provisioning output, then exits by default. Provisioning commands are traced into `/tmp/provision.log` in the guest and streamed into the host-side startup log. Use `-f` to follow it, `--tail N` or `--tail=N` to select the last N lines, and `-t` to read the timestamped log. These options can be combined. After SSH is ready, read the guest copy with `d2 macos.exec cat /tmp/provision.log`.
 
 Each checkout uses a dedicated VM name so separate checkouts can run without colliding.
 

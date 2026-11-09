@@ -30,15 +30,24 @@ Vagrant.configure("2") do |config|
   # Shell provisioning script to set up user, SSH keys, and Homebrew
   config.vm.provision "shell", privileged: false, inline: <<-SHELL
     exec /bin/bash -s <<'BASH'
+    PROVISION_LOG="/tmp/provision.log"
+    : > "$PROVISION_LOG"
+    exec > >(tee -a "$PROVISION_LOG") 2>&1
+    PS4='+ '
+    set -x
+
     echo "=== Starting custom VM Provisioning ==="
+    echo "Detailed provisioning output is being written to $PROVISION_LOG and streamed to d2 macos.logs."
 
     # 1. Create the 'dev' user if it doesn't exist
+    echo "=== Provisioning step 1: create the dev user ==="
     if ! id "dev" &>/dev/null; then
       echo "Creating 'dev' user..."
       sudo sysadminctl -addUser dev -fullName "Developer" -password "password" -admin
     fi
 
     # 2. Configure the .ssh directory and authorized_keys for the 'dev' user
+    echo "=== Provisioning step 2: configure SSH access ==="
     DEV_HOME="/Users/dev"
     echo "Configuring SSH authorized_keys for dev user..."
     sudo mkdir -p "$DEV_HOME/.ssh"
@@ -50,10 +59,12 @@ Vagrant.configure("2") do |config|
     sudo chmod 600 "$DEV_HOME/.ssh/authorized_keys"
 
     # 3. Ensure Remote Login (SSH) is enabled on the system
+    echo "=== Provisioning step 3: enable Remote Login ==="
     echo "Enabling System SSH Remote Login..."
     sudo systemsetup -setremotelogin on
 
     # 4. Install Homebrew for the Vagrant SSH user and install development tools
+    echo "=== Provisioning step 4: install Homebrew and development tools ==="
     BREW_BIN="/opt/homebrew/bin/brew"
     if [ ! -x "$BREW_BIN" ]; then
       echo "Installing Homebrew..."
@@ -67,11 +78,13 @@ Vagrant.configure("2") do |config|
     "$BREW_BIN" install perl cpanminus git vim tmux openssh openssl@3 htop curl go rust python gcc make sdkman-cli nvm
 
     if ! perl -I "$HOME/perl5/lib/perl5" -Mlocal::lib -e 'exit 0' >/dev/null 2>&1; then
+      echo "=== Provisioning step 5: install Perl modules ==="
       echo "Installing local::lib for the admin user..."
       cpanm --local-lib "$HOME/perl5" local::lib Dist::Zilla Devel::Cover Devel::NYTProf Perl::Tidy
     fi
 
     SDKMAN_DIR="$("$BREW_BIN" --prefix sdkman-cli)/libexec"
+    echo "=== Provisioning step 6: install Java and Maven with SDKMAN ==="
     export SDKMAN_DIR
     mkdir -p "$SDKMAN_DIR/etc"
     SDKMAN_CONFIG="$SDKMAN_DIR/etc/config"
@@ -103,6 +116,7 @@ Vagrant.configure("2") do |config|
     sdk default java "$JAVA_25_VERSION"
 
     NVM_DIR="$HOME/.nvm"
+    echo "=== Provisioning step 7: install Node.js with NVM ==="
     export NVM_DIR
     NVM_ONLY="alpha,lts,non-lts,iojs"
     export NVM_ONLY
@@ -124,6 +138,7 @@ Vagrant.configure("2") do |config|
     done
     nvm alias default 27
 
+    echo "=== Provisioning step 8: configure shell profiles ==="
     for PROFILE in "$HOME/.zprofile" "$HOME/.bash_profile"; do
       touch "$PROFILE"
       if grep -Fq '/opt/homebrew/opt/openjdk@25/bin' "$PROFILE"; then

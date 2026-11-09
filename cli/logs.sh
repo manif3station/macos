@@ -5,7 +5,9 @@ usage() {
   cat <<'HELP'
 Usage: d2 macos.logs [-t] [-f] [--tail N|--tail=N]
 
-Show the VM startup log. By default, print the log and exit.
+Show VM startup and guest provisioning output. Provisioning commands are traced
+to /tmp/provision.log in the guest and streamed into this host-side log.
+By default, print the log and exit.
 
 Options:
   -t, --timestamps  Show UTC timestamps recorded for each log line

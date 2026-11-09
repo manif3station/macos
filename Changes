@@ -1,3 +1,8 @@
+1.21  2026-11-09
+    Trace guest provisioning commands to /tmp/provision.log.
+    Stream detailed provisioning output to macos.logs.
+    Document how to follow and retrieve the provisioning log.
+
 1.20  2026-11-09
     Set the host Internet Sharing DHCP lease time to 600 seconds during setup.
     Document the host network setting for users and agents.
