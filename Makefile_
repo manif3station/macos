@@ -1,0 +1,2 @@
+install:
+	vagrant plugin install vagrant-tart
