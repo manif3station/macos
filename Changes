@@ -1,3 +1,7 @@
+1.14  2026-11-09
+    Install htop and additional Perl development modules.
+    Document the graphical guest window and available development tools.
+
 1.13  2026-11-09
     Clarify startup duration and remaining-time estimates in the docs.
     Explain that estimates are based on the previous successful startup.

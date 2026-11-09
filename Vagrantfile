@@ -6,7 +6,7 @@ Vagrant.configure("2") do |config|
     tart.cpus = 4
     tart.memory = 6144
     tart.disk = 50
-    tart.gui = false
+    tart.gui = true
   end
 
   config.ssh.username = "admin"
@@ -62,11 +62,11 @@ Vagrant.configure("2") do |config|
     echo "Installing development tools..."
     "$BREW_BIN" tap sdkman/tap
     "$BREW_BIN" trust sdkman/tap
-    "$BREW_BIN" install perl cpanminus git vim tmux openssh openssl@3 curl go rust python gcc make sdkman-cli nvm
+    "$BREW_BIN" install perl cpanminus git vim tmux openssh openssl@3 htop curl go rust python gcc make sdkman-cli nvm
 
     if ! perl -I "$HOME/perl5/lib/perl5" -Mlocal::lib -e 'exit 0' >/dev/null 2>&1; then
       echo "Installing local::lib for the admin user..."
-      cpanm --local-lib "$HOME/perl5" local::lib
+      cpanm --local-lib "$HOME/perl5" local::lib Dist::Zilla Devel::Cover Devel::NYTProf Perl::Tidy
     fi
 
     SDKMAN_DIR="$("$BREW_BIN" --prefix sdkman-cli)/libexec"

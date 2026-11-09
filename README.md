@@ -26,7 +26,7 @@ Install the prerequisites if they are not already present:
 d2 macos.setup
 ```
 
-The VM runtime, Homebrew, and `d2` must be available on `PATH`. `macos.setup` trusts the Cirrus Labs tap, installs Tart, patches its Homebrew formula dependencies, installs the provider, and pulls the macOS image. `macos.up` returns while the VM is provisioning in the background; check progress with `d2 macos.ps`.
+The VM runtime, Homebrew, and `d2` must be available on `PATH`. `macos.setup` trusts the Cirrus Labs tap, installs Tart, patches its Homebrew formula dependencies, installs the provider, and pulls the macOS image. `macos.up` opens the guest window and returns while the VM is provisioning in the background; check progress with `d2 macos.ps`.
 
 Setup creates a VM-specific SSH key pair at `~/.ssh/d2macOs` and `~/.ssh/d2macOs.pub`. The VM configuration uses `MACOS_VM_SSH_KEY` when set; otherwise it uses `~/.ssh/d2macOs.pub`. Setup also pulls `ghcr.io/cirruslabs/macos-sequoia-base:latest`.
 
@@ -60,7 +60,7 @@ d2 macos.skill
 
 Each checkout uses a dedicated VM name so separate checkouts can run without colliding.
 
-When provisioning is complete, Homebrew is installed with Perl, cpanm, Git, Vim, tmux, OpenSSH, OpenSSL 3, curl, Go, Rust, Python 3, GCC, make, SDKMAN, and NVM. Perl `local::lib` is installed for the admin user. SDKMAN installs Maven and Java 21 and 25. NVM installs Node.js 26 and the available Node.js 27 alpha release, including `npm` and `npx`. Python includes `venv`, and GCC provides C and C++ compilers. The admin user's Bash profile configures the editor, pager, terminal type, Apple Terminal integration, and Perl local library path; Readline disables bracketed paste. `d2 macos.exec` waits until provisioning has finished before running commands.
+When provisioning is complete, Homebrew is installed with Perl, cpanminus, htop, Git, Vim, tmux, OpenSSH, OpenSSL 3, curl, Go, Rust, Python 3, GCC, make, SDKMAN, and NVM. Perl `local::lib`, Dist::Zilla, Devel::Cover, Devel::NYTProf, and Perl::Tidy are installed for the admin user. SDKMAN installs Maven and Java 21 and 25. NVM installs Node.js 26 and the available Node.js 27 alpha release, including `npm` and `npx`. Python includes `venv`, and GCC provides C and C++ compilers. The admin user's Bash profile configures the editor, pager, terminal type, Apple Terminal integration, and Perl local library path; Readline disables bracketed paste. `d2 macos.exec` waits until provisioning has finished before running commands.
 
 Run `d2 macos.setup` before `macos.up`, `macos.down`, or `macos.exec` if the SSH public key is missing. `macos.exec` also asks you to run `d2 macos.up` first when the VM is not running.
 
