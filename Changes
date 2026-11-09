@@ -1,3 +1,18 @@
+1.6  2026-11-09
+    Select the installed Node.js 27 alpha release in new shells.
+    Document refreshing the installed skill from this checkout.
+    Record the successful remote command workflow.
+
+1.5  2026-11-09
+    Use a dedicated Tart VM name for this checkout.
+    Install the available Node.js 27 alpha release through NVM.
+    Make Node.js 27 available from new shells.
+
+1.4  2026-11-09
+    Add timestamped startup logs and the macos.logs command.
+    Correct the shell provisioning command.
+    Configure Perl, SDKMAN, NVM, and the admin user's shell.
+
 1.3  2026-11-09
     Create a VM-specific SSH key pair during setup.
     Use the configured SSH public key or the generated fallback.

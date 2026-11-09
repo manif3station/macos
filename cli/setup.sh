@@ -5,7 +5,8 @@ usage() {
   cat <<'HELP'
 Usage: d2 macos.setup [--help]
 
-Prepare the VM SSH key, install the Tart provider, and pull the macOS image.
+Prepare the VM SSH key, trust the Cirrus Labs tap, install Tart, patch its
+Homebrew formula dependencies, install the provider, and pull the macOS image.
 
 Options:
   -h, --help  Show this help
@@ -42,5 +43,83 @@ else
   echo "Created SSH key pair at $private_key."
 fi
 
+brew tap cirruslabs/cli
+brew trust cirruslabs/cli
+brew install cirruslabs/cli/tart
+
+patch_formula() {
+  formula_path="$1"
+  temp_file="${formula_path}.d2tmp.$$"
+  formula_mode=$(stat -f '%Lp' "$formula_path")
+
+  awk '
+    BEGIN {
+      on_macos_indent = -1
+    }
+    function indentation(line) {
+      match(line, /^[ \t]*/)
+      return RLENGTH
+    }
+    function is_macos_dependency(line) {
+      return line ~ /^[ \t]*depends_on[ \t]+(:macos|macos:)([ \t,]|$)/
+    }
+    /^[ \t]*on_macos[ \t]+do([ \t]*#.*)?$/ {
+      on_macos_indent = indentation($0)
+      print
+      next
+    }
+    {
+      if (is_macos_dependency($0)) {
+        dependency_indent = indentation($0)
+        if (on_macos_indent >= 0 && dependency_indent > on_macos_indent) {
+          print
+        } else {
+          indent = substr($0, 1, dependency_indent)
+          dependency = substr($0, dependency_indent + 1)
+          print indent "on_macos do"
+          print indent "  " dependency
+          print indent "end"
+        }
+        next
+      }
+      print
+      if (on_macos_indent >= 0 && $0 ~ /^[ \t]*end[ \t]*$/ && indentation($0) == on_macos_indent) {
+        on_macos_indent = -1
+      }
+    }
+  ' "$formula_path" > "$temp_file"
+
+  if cmp -s "$formula_path" "$temp_file"; then
+    rm "$temp_file"
+    echo "Homebrew dependency in $formula_path is already compatible."
+  else
+    chmod "$formula_mode" "$temp_file"
+    mv "$temp_file" "$formula_path"
+    echo "Patched Homebrew dependency in $formula_path."
+  fi
+}
+
+brew_prefix=$(brew --prefix)
+tap_repo=$(brew --repo cirruslabs/cli 2>/dev/null || true)
+for formula_name in softnet.rb tart.rb; do
+  formula_path=""
+  for tap_root in \
+    "$tap_repo" \
+    "$brew_prefix/Library/Taps/cirruslabs/homebrew-cli" \
+    "/opt/homebrew/Library/Taps/cirruslabs/homebrew-cli" \
+    "$HOME/homebrew/Library/Taps/cirruslabs/homebrew-cli" \
+    "$HOME/.homebrew/Library/Taps/cirruslabs/homebrew-cli"; do
+    [ -d "$tap_root" ] || continue
+    formula_path=$(find "$tap_root" -type f -name "$formula_name" -print -quit)
+    [ -n "$formula_path" ] && break
+  done
+
+  if [ -z "$formula_path" ]; then
+    echo "macos.setup: could not find $formula_name under the Homebrew tap. Tart was installed, but its formula could not be patched." >&2
+    exit 1
+  fi
+  patch_formula "$formula_path"
+done
+
 vagrant plugin install vagrant-tart
-exec tart pull ghcr.io/cirruslabs/macos-sequoia-base:latest
+tart pull ghcr.io/cirruslabs/macos-sequoia-base:latest

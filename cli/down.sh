@@ -29,4 +29,21 @@ if [ -z "${MACOS_VM_SSH_KEY:-}" ] && [ ! -f "$HOME/.ssh/d2macOs.pub" ]; then
 fi
 
 cd "$(dirname "$0")/.."
+pid_file=".vagrant/up.pid"
+if [ -f "$pid_file" ]; then
+  up_pid=$(cat "$pid_file")
+  case "$up_pid" in
+    ''|*[!0-9]*) up_pid="" ;;
+  esac
+  if [ -n "$up_pid" ] && kill -0 "$up_pid" 2>/dev/null; then
+    up_command=$(ps -p "$up_pid" -o command= 2>/dev/null || true)
+    case "$up_command" in
+      *vagrant*up*)
+        echo "macos.down: the VM is still starting or provisioning. Check d2 macos.ps for progress." >&2
+        exit 1
+        ;;
+    esac
+  fi
+fi
+
 exec vagrant halt
