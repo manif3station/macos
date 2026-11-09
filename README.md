@@ -36,12 +36,23 @@ Setup creates a VM-specific SSH key pair at `~/.ssh/d2macOs` and `~/.ssh/d2macOs
 d2 macos.up
 d2 macos.down
 d2 macos.exec <command>
+d2 macos.cp <host-path> vm:<vm-path>
+d2 macos.cp vm:<vm-path> <host-path>
+d2 macos.rsync [rsync-options...] <host-path> vm:<vm-path>
+d2 macos.rsync [rsync-options...] vm:<vm-path> <host-path>
 d2 macos.setup
 d2 macos.ps
 d2 macos.logs
+d2 macos.skill
 ```
 
+`macos.skill` prints [SKILLS.md](SKILLS.md), which gives agents the workflow for checking, starting, monitoring, using, and stopping the VM.
+
 `macos.down` halts the VM while keeping it available for the next start. `macos.exec` runs a command over SSH in the running VM, using the configured macOS account. Quote shell expressions that should be interpreted inside the VM.
+
+`macos.cp` copies files and directories recursively in either direction. Mark the VM side with `vm:`, for example `d2 macos.cp ./notes.txt vm:/Users/admin/notes.txt` or `d2 macos.cp vm:/Users/admin/output.log ./output.log`.
+
+`macos.rsync` synchronises files in either direction and accepts rsync options before the two paths. It uses archive mode by default and preserves standard trailing-slash behaviour. For example, `d2 macos.rsync -av ./project/ vm:/Users/admin/project/`. The `-e` and `--rsh` options are reserved for the VM connection.
 
 `macos.ps` reports the configured VM name, Tart process ID, IP address, macOS version, start time, and elapsed runtime. During startup it explains the current step, shows the last log line and how long ago it changed, and reports whether SSH is reachable. It also lists the guest processes with the highest CPU and memory use when the VM is ready.
 
@@ -67,9 +78,12 @@ Each command provides its own usage information:
 d2 macos.up --help
 d2 macos.down --help
 d2 macos.exec --help
+d2 macos.cp --help
+d2 macos.rsync --help
 d2 macos.setup --help
 d2 macos.ps --help
 d2 macos.logs --help
+d2 macos.skill --help
 ```
 
 This project is available under the MIT licence; see [LICENSE](LICENSE).

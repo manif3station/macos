@@ -1,3 +1,16 @@
+1.11  2026-11-09
+    Clarify both transfer directions in the command reference.
+    Document cp, rsync, and skill instructions for agents.
+
+1.10  2026-11-09
+    Add macos.cp for recursive host and VM file copies.
+    Add macos.rsync for synchronising host and VM paths.
+    Document the vm: path prefix and transfer examples.
+
+1.9  2026-11-09
+    Add the macos.skill command to print agent instructions.
+    Document the VM control workflow for agents in SKILLS.md.
+
 1.8  2026-11-09
     Report the configured VM and its actual Tart process.
     Show the startup step and age of the latest log output.
