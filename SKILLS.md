@@ -4,7 +4,7 @@ Use these commands to control the macOS VM from the host. The commands only run 
 
 ## Before using the VM
 
-Run `d2 macos.skill` to print these instructions. Use `d2 macos.setup` if the VM SSH key or runtime setup is missing. Setup creates the Vagrant SSH key, patches the tap formulae before installing Tart, sets the host Internet Sharing DHCP lease time to 600 seconds, then installs the provider and pulls the macOS image.
+Run `d2 macos.skill` to print these instructions. In a remote Bash session, source `~/.bash_profile` first if needed to initialise the Dashboard CLI environment. Use `d2 macos.setup` if the VM SSH key or runtime setup is missing. Setup creates the Vagrant SSH key, patches the tap formulae before installing Tart, sets the host Internet Sharing DHCP lease time to 600 seconds, then installs the provider and pulls the macOS image.
 
 ## Start and monitor
 

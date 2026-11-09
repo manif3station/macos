@@ -1,3 +1,7 @@
+1.25  2026-11-09
+    Find Vagrant in standard installation directories when the host PATH omits it.
+    Document loading the Dashboard CLI environment in remote Bash sessions.
+
 1.24  2026-11-09
     Run provisioning through the Tart Guest Agent when Vagrant SSH fails.
     Keep Java and Node setup running if optional Perl modules fail.

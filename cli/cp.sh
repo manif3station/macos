@@ -1,6 +1,13 @@
 #!/bin/sh
 set -eu
 
+for vagrant_dir in /usr/local/bin /opt/vagrant/bin; do
+  if [ -x "$vagrant_dir/vagrant" ]; then
+    PATH="$vagrant_dir:$PATH"
+  fi
+done
+export PATH
+
 usage() {
   cat <<'HELP'
 Usage: d2 macos.cp <host-path> vm:<vm-path>

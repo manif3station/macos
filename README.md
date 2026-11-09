@@ -1,6 +1,6 @@
 # macOS skill
 
-Version 1.24
+Version 1.25
 
 This Developer Dashboard skill starts and controls a macOS virtual machine with Tart. It only runs on macOS hosts, and Tart requires Apple silicon.
 
@@ -27,6 +27,8 @@ Install the prerequisites if they are not already present:
 ```sh
 d2 macos.setup
 ```
+
+If Vagrant is installed in `/usr/local/bin` or `/opt/vagrant/bin`, the commands add that location when it is missing from `PATH`.
 
 The VM runtime, Homebrew, and `d2` must be available on `PATH`. `macos.setup` trusts the Cirrus Labs tap, patches the Homebrew formula dependencies before installing Tart, sets the host Internet Sharing DHCP lease time to 600 seconds, installs the provider, and pulls the macOS image. `macos.up` runs headlessly by default and returns while the VM is provisioning in the background; pass `--gui` to open a VM window. If Vagrant SSH fails but the Tart Guest Agent is ready, `macos.up` uses the agent to run the same provisioning script. Follow this work with `d2 macos.ps` and `d2 macos.logs -t -f`; wait for the provisioning-complete message before relying on the pre-installed tools. Headless mode suppresses Tart's UI window; macOS still manages its guest `WindowServer`.
 
