@@ -43,7 +43,7 @@ d2 macos.logs
 
 `macos.down` halts the VM while keeping it available for the next start. `macos.exec` runs a command over SSH in the running VM, using the configured macOS account. Quote shell expressions that should be interpreted inside the VM.
 
-`macos.ps` reports the VM process ID, macOS version, start time, and elapsed runtime. It also lists the guest processes with the highest CPU and memory use. If startup is still in progress, it shows the provisioning process and log path.
+`macos.ps` reports the configured VM name, Tart process ID, IP address, macOS version, start time, and elapsed runtime. During startup it explains the current step, shows the last log line and how long ago it changed, and reports whether SSH is reachable. It also lists the guest processes with the highest CPU and memory use when the VM is ready.
 
 `macos.logs` prints the startup log and exits by default. Use `-f` to follow it, `--tail N` or `--tail=N` to select the last N lines, and `-t` to read the timestamped log. These options can be combined.
 

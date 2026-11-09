@@ -1,3 +1,13 @@
+1.8  2026-11-09
+    Report the configured VM and its actual Tart process.
+    Show the startup step and age of the latest log output.
+    Explain SSH reachability and startup timeout state.
+
+1.7  2026-11-09
+    Show the configured VM name and detect a running Tart VM directly.
+    Explain the current startup step and time since the last log output.
+    Report the VM IP and SSH reachability when startup times out.
+
 1.6  2026-11-09
     Select the installed Node.js 27 alpha release in new shells.
     Document refreshing the installed skill from this checkout.

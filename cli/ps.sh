@@ -5,8 +5,7 @@ usage() {
   cat <<'HELP'
 Usage: d2 macos.ps [--help]
 
-Show VM startup or running status, the macOS version, process start time,
-elapsed time, and the guest's highest CPU and memory processes.
+Show VM state, startup progress, the latest log activity, and guest processes.
 
 Options:
   -h, --help  Show this help
@@ -33,6 +32,13 @@ cd "$(dirname "$0")/.."
 
 pid_file=".vagrant/up.pid"
 log_file=".vagrant/up.log"
+vm_name=$(awk -F '"' '/tart\.name[[:space:]]*=/ { print $2; exit }' Vagrantfile)
+if [ -z "$vm_name" ]; then
+  vm_name="default"
+fi
+
+up_pid=""
+startup_active=false
 if [ -f "$pid_file" ]; then
   up_pid=$(cat "$pid_file")
   case "$up_pid" in
@@ -41,50 +47,125 @@ if [ -f "$pid_file" ]; then
   if [ -n "$up_pid" ] && kill -0 "$up_pid" 2>/dev/null; then
     up_command=$(ps -p "$up_pid" -o command= 2>/dev/null || true)
     case "$up_command" in
-      *vagrant*up*)
-        echo "VM status: starting or provisioning"
-        echo "Setup process PID: $up_pid"
-        echo "Log: $log_file"
-        exit 0
-        ;;
+      *vagrant*up*) startup_active=true ;;
+      *) up_pid="" ;;
     esac
+  else
+    up_pid=""
   fi
 fi
 
-state=$(vagrant status --machine-readable 2>/dev/null | awk -F, '$3 == "state" { print $4; exit }')
-if [ "$state" != running ]; then
-  echo "VM status: ${state:-unknown}"
-  if [ -f "$log_file" ]; then
-    echo "Startup log: $log_file"
+tart_state=$(tart list 2>/dev/null | awk -v name="$vm_name" '$2 == name { print $NF; exit }' || true)
+vm_pid=$(pgrep -f "[t]art run $vm_name" | head -n 1 || true)
+vm_ip=$(tart ip "$vm_name" 2>/dev/null || true)
+vagrant_state=""
+if [ "$startup_active" = false ]; then
+  vagrant_state=$(vagrant status --machine-readable 2>/dev/null | awk -F, '$3 == "state" { print $4; exit }' || true)
+fi
+
+last_line=""
+log_age=""
+if [ -f "$log_file" ]; then
+  last_line=$(tail -n 1 "$log_file" | sed 's/^[[:space:]]*default: //; s/^[[:space:]]*//')
+  last_line=$(printf '%s' "$last_line" | cut -c 1-220)
+  log_mtime=$(stat -f %m "$log_file" 2>/dev/null || echo 0)
+  now=$(date +%s)
+  if [ "$log_mtime" -gt 0 ]; then
+    age=$((now - log_mtime))
+    if [ "$age" -lt 60 ]; then
+      log_age="${age}s ago"
+    elif [ "$age" -lt 3600 ]; then
+      log_age="$((age / 60))m $((age % 60))s ago"
+    else
+      log_age="$((age / 3600))h $(((age % 3600) / 60))m ago"
+    fi
   fi
-  echo "Start it with d2 macos.up."
+fi
+
+if [ "$startup_active" = true ]; then
+  elapsed=$(ps -p "$up_pid" -o etime= | sed 's/^[[:space:]]*//')
+  echo "VM: $vm_name"
+  echo "Startup: in progress (PID $up_pid; elapsed $elapsed)"
+  case "$last_line" in
+    *"Waiting for machine to boot"*)
+      echo "Waiting for: macOS to boot and accept SSH connections."
+      ;;
+    *"SSH address:"*)
+      echo "Waiting for: SSH connection or authentication to succeed."
+      ;;
+    *"Running provisioner:"*)
+      echo "Waiting for: VM provisioning."
+      ;;
+    *"Downloading"*|*"In progress"*|*"Fetching"*)
+      echo "Waiting for: a download or package installation to finish."
+      ;;
+    *)
+      echo "Current step: see the latest startup log line below."
+      ;;
+  esac
+  [ -n "$vm_pid" ] && echo "Tart process: $vm_pid" || true
+  [ -n "$vm_ip" ] && echo "VM IP: $vm_ip" || true
+  [ -n "$log_age" ] && echo "Last log output: $log_age" || true
+  [ -n "$last_line" ] && echo "Last log line: $last_line" || true
+  echo "Follow progress: d2 macos.logs -t -f --tail=20"
   exit 0
 fi
 
-vm_name="my-custom-mac-vm"
-vm_pid=$(pgrep -f "[t]art run $vm_name" | head -n 1 || true)
-echo "VM status: running"
-if [ -n "$vm_pid" ]; then
-  started=$(ps -p "$vm_pid" -o lstart= | sed 's/^[[:space:]]*//')
-  elapsed=$(ps -p "$vm_pid" -o etime= | sed 's/^[[:space:]]*//')
-  echo "VM process PID: $vm_pid"
-  echo "Started: $started"
-  echo "Running for: $elapsed"
-else
-  echo "VM process PID: unavailable"
+if [ -n "$vm_pid" ] || [ "$tart_state" = running ]; then
+  echo "VM: $vm_name"
+  echo "VM status: running in Tart"
+  if [ -n "$vm_pid" ]; then
+    started=$(ps -p "$vm_pid" -o lstart= | sed 's/^[[:space:]]*//')
+    elapsed=$(ps -p "$vm_pid" -o etime= | sed 's/^[[:space:]]*//')
+    echo "VM process PID: $vm_pid"
+    echo "Started: $started"
+    echo "Running for: $elapsed"
+  else
+    echo "VM process PID: unavailable"
+  fi
+  [ -n "$vm_ip" ] && echo "VM IP: $vm_ip" || true
+
+  if [ "$vagrant_state" = running ]; then
+    echo "Vagrant state: running"
+    mac_version=$(vagrant ssh -c 'sw_vers -productVersion' 2>/dev/null || true)
+    if [ -n "$mac_version" ]; then
+      echo "macOS version: $mac_version"
+    else
+      echo "macOS version: SSH command failed"
+    fi
+    echo
+    echo "Top guest processes by CPU:"
+    vagrant ssh -c 'ps -A -o %cpu,%mem,pid,command | tail -n +2 | sort -nr -k1,1 | head -n 10' || true
+    echo
+    echo "Top guest processes by memory:"
+    vagrant ssh -c 'ps -A -o %cpu,%mem,pid,command | tail -n +2 | sort -nr -k2,2 | head -n 10' || true
+  else
+    if [ -n "$vm_ip" ] && nc -G 2 -z "$vm_ip" 22 >/dev/null 2>&1; then
+      echo "SSH port: reachable, but the VM manager has not completed its boot check."
+      echo "Last reported Vagrant state: ${vagrant_state:-unknown}"
+      echo "Inspect the startup log for an SSH authentication or boot timeout error."
+    else
+      echo "SSH port: not reachable yet; macOS may still be booting."
+      echo "Last reported Vagrant state: ${vagrant_state:-unknown}"
+    fi
+    if grep -q 'Timed out while waiting for the machine to boot' "$log_file" 2>/dev/null; then
+      echo "Startup result: timed out waiting for the guest to become ready."
+    fi
+    [ -n "$log_age" ] && echo "Last log output: $log_age" || true
+    [ -n "$last_line" ] && echo "Last log line: $last_line" || true
+    echo "Logs: d2 macos.logs -t --tail=30"
+  fi
+  exit 0
 fi
 
-mac_version=$(d2 macos.exec sw_vers -productVersion 2>/dev/null || true)
-if [ -n "$mac_version" ]; then
-  echo "macOS version: $mac_version"
-else
-  echo "macOS version: unavailable over SSH"
+echo "VM: $vm_name"
+echo "VM status: ${vagrant_state:-${tart_state:-not_created}}"
+if [ -f "$log_file" ]; then
+  if grep -q 'Timed out while waiting for the machine to boot' "$log_file"; then
+    echo "Startup result: timed out waiting for the guest to become ready."
+  fi
+  [ -n "$log_age" ] && echo "Last log output: $log_age" || true
+  [ -n "$last_line" ] && echo "Last log line: $last_line" || true
+  echo "Logs: d2 macos.logs -t --tail=30"
 fi
-
-echo
-echo "Top guest processes by CPU:"
-d2 macos.exec 'ps -A -o %cpu,%mem,pid,command | tail -n +2 | sort -nr -k1,1 | head -n 10'
-
-echo
-echo "Top guest processes by memory:"
-d2 macos.exec 'ps -A -o %cpu,%mem,pid,command | tail -n +2 | sort -nr -k2,2 | head -n 10'
+echo "Start it with d2 macos.up."
