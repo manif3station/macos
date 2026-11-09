@@ -5,8 +5,8 @@ usage() {
   cat <<'HELP'
 Usage: d2 macos.setup [--help]
 
-Prepare the VM SSH key, trust the Cirrus Labs tap, install Tart, patch its
-Homebrew formula dependencies, install the provider, and pull the macOS image.
+Prepare the VM SSH key, trust the Cirrus Labs tap, patch its Homebrew formula
+dependencies, install Tart and its provider, and pull the macOS image.
 
 Options:
   -h, --help  Show this help
@@ -45,7 +45,6 @@ fi
 
 brew tap cirruslabs/cli
 brew trust cirruslabs/cli
-brew install cirruslabs/cli/tart
 
 patch_formula() {
   formula_path="$1"
@@ -115,11 +114,12 @@ for formula_name in softnet.rb tart.rb; do
   done
 
   if [ -z "$formula_path" ]; then
-    echo "macos.setup: could not find $formula_name under the Homebrew tap. Tart was installed, but its formula could not be patched." >&2
+    echo "macos.setup: could not find $formula_name under the Homebrew tap. Tart was not installed because its formula could not be patched." >&2
     exit 1
   fi
   patch_formula "$formula_path"
 done
 
+brew install cirruslabs/cli/tart
 vagrant plugin install vagrant-tart
 tart pull ghcr.io/cirruslabs/macos-sequoia-base:latest

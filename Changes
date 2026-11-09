@@ -1,3 +1,9 @@
+1.17  2026-11-09
+    Document that tap formulae are patched before Tart installation.
+
+1.16  2026-11-09
+    Patch Homebrew formula dependencies before installing Tart.
+
 1.15  2026-11-09
     Export the Homebrew OpenSSL 3 prefix in the admin shell profile.
     Document the new environment variable for users and agents.

@@ -26,7 +26,7 @@ Install the prerequisites if they are not already present:
 d2 macos.setup
 ```
 
-The VM runtime, Homebrew, and `d2` must be available on `PATH`. `macos.setup` trusts the Cirrus Labs tap, installs Tart, patches its Homebrew formula dependencies, installs the provider, and pulls the macOS image. `macos.up` opens the guest window and returns while the VM is provisioning in the background; check progress with `d2 macos.ps`.
+The VM runtime, Homebrew, and `d2` must be available on `PATH`. `macos.setup` trusts the Cirrus Labs tap, patches the Homebrew formula dependencies before installing Tart, installs the provider, and pulls the macOS image. `macos.up` opens the guest window and returns while the VM is provisioning in the background; check progress with `d2 macos.ps`.
 
 Setup creates a VM-specific SSH key pair at `~/.ssh/d2macOs` and `~/.ssh/d2macOs.pub`. The VM configuration uses `MACOS_VM_SSH_KEY` when set; otherwise it uses `~/.ssh/d2macOs.pub`. Setup also pulls `ghcr.io/cirruslabs/macos-sequoia-base:latest`.
 
