@@ -101,4 +101,4 @@ else
   case "$destination_path" in -*) destination_path="./$destination_path" ;; esac
 fi
 
-scp -r -F "$ssh_config" -- "$source_path" "$destination_path"
+exec scp -r -F "$ssh_config" -- "$source_path" "$destination_path"

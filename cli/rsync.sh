@@ -114,4 +114,4 @@ fi
 
 ssh_config_quoted=$(printf '%s' "$ssh_config" | sed "s/'/'\\\\''/g")
 rsync_shell="ssh -F '$ssh_config_quoted'"
-rsync -a "${rsync_options[@]}" -e "$rsync_shell" -- "$source_path" "$destination_path"
+exec rsync -a "${rsync_options[@]}" -e "$rsync_shell" -- "$source_path" "$destination_path"

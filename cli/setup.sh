@@ -122,4 +122,4 @@ done
 
 brew install cirruslabs/cli/tart
 vagrant plugin install vagrant-tart
-tart pull ghcr.io/cirruslabs/macos-sequoia-base:latest
+exec tart pull ghcr.io/cirruslabs/macos-sequoia-base:latest
