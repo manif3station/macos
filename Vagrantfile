@@ -107,8 +107,8 @@ Vagrant.configure("2") do |config|
     if ! perl -I "$HOME/perl5/lib/perl5" -Mlocal::lib -e 'exit 0' >/dev/null 2>&1; then
       echo "=== Provisioning step 5: install Perl modules ==="
       echo "Installing local::lib for the admin user..."
-      if ! cpanm --local-lib "$HOME/perl5" local::lib Dist::Zilla Devel::Cover Devel::NYTProf Perl::Tidy; then
-        echo "Warning: one or more optional Perl modules failed to install; continuing with the rest of provisioning." >&2
+      if ! cpanm --local-lib "$HOME/perl5" local::lib; then
+        echo "Warning: local::lib failed to install; continuing with the rest of provisioning." >&2
       fi
     fi
 

@@ -1,6 +1,6 @@
 # macOS skill
 
-Version 1.28
+Version 1.29
 
 This Developer Dashboard skill starts and controls a macOS virtual machine with Tart. It only runs on macOS hosts, and Tart requires Apple silicon.
 
@@ -71,7 +71,7 @@ d2 macos.skill
 
 Each checkout uses a dedicated VM name so separate checkouts can run without colliding.
 
-When provisioning is complete, Homebrew is installed with Perl, cpanminus, htop, Git, Vim, tmux, OpenSSH, OpenSSL 3, curl, Go, Rust, Python 3, GCC, make, SDKMAN, and NVM. Perl `local::lib`, Dist::Zilla, Devel::Cover, Devel::NYTProf, and Perl::Tidy are installed for the admin user. Failures in optional Perl modules are logged as warnings so setup can continue. SDKMAN installs Maven and Java 21 and 25. NVM installs Node.js 26 and the available Node.js 27 alpha release, including `npm` and `npx`. Python includes `venv`, and GCC provides C and C++ compilers. The admin user's Bash profile configures the editor, pager, terminal type, Apple Terminal integration, Perl local library path, and `OPENSSL_PREFIX=/opt/homebrew/opt/openssl@3`; Readline disables bracketed paste. `d2 macos.exec` waits for an active startup job; after startup fails, it can still run guest-agent commands for diagnosis, though development tools may not be ready.
+When provisioning is complete, Homebrew is installed with Perl, cpanminus, htop, Git, Vim, tmux, OpenSSH, OpenSSL 3, curl, Go, Rust, Python 3, GCC, make, SDKMAN, and NVM. The Perl `local::lib` module is installed for the admin user. SDKMAN installs Maven and Java 21 and 25. NVM installs Node.js 26 and the available Node.js 27 alpha release, including `npm` and `npx`. Python includes `venv`, and GCC provides C and C++ compilers. The admin user's Bash profile configures the editor, pager, terminal type, Apple Terminal integration, Perl local library path, and `OPENSSL_PREFIX=/opt/homebrew/opt/openssl@3`; Readline disables bracketed paste. `d2 macos.exec` waits for an active startup job; after startup fails, it can still run guest-agent commands for diagnosis, though development tools may not be ready.
 
 Run `d2 macos.setup` before `macos.up`, `macos.down`, or `macos.exec` if the SSH public key is missing. `macos.exec` also asks you to run `d2 macos.up` first when the VM is not running.
 

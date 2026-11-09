@@ -30,7 +30,7 @@ d2 macos.exec 'ps -A -o %cpu,%mem,pid,command'
 
 If `macos.exec` says the VM is not running, check `d2 macos.ps`. Use `d2 macos.up` only when creating a new VM. A paused VM must be resumed with `d2 macos.start`; `macos.up` will warn and refuse to restart an existing stopped or paused VM. A running Tart process alone does not mean the guest agent is ready.
 
-The guest includes `htop`, Perl `local::lib`, Dist::Zilla, Devel::Cover, Devel::NYTProf, Perl::Tidy, and the other tools listed in the README. Use `d2 macos.exec htop` to inspect processes interactively.
+The guest includes `htop`, Perl `local::lib`, and the other tools listed in the README. Use `d2 macos.exec htop` to inspect processes interactively.
 
 ## Copy files
 

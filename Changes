@@ -1,3 +1,7 @@
+1.29  2026-11-09
+    Install only the local::lib CPAN module to reduce guest provisioning time.
+    Update the documented Perl tools to match the smaller installation.
+
 1.28  2026-11-09
     Run the provisioning script as a plain Bash file so package installers cannot consume later steps.
     Pass the same script as a Bash argument through Vagrant and as a staged file through Tart.
