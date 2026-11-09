@@ -121,5 +121,8 @@ for formula_name in softnet.rb tart.rb; do
 done
 
 brew install cirruslabs/cli/tart
+echo "Setting the Internet Sharing DHCP lease time to 600 seconds:"
+echo 'sudo defaults write /Library/Preferences/SystemConfiguration/com.apple.InternetSharing.default.plist bootpd -dict DHCPLeaseTimeSecs -int 600'
+sudo defaults write /Library/Preferences/SystemConfiguration/com.apple.InternetSharing.default.plist bootpd -dict DHCPLeaseTimeSecs -int 600
 vagrant plugin install vagrant-tart
 exec tart pull ghcr.io/cirruslabs/macos-sequoia-base:latest

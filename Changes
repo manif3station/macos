@@ -1,3 +1,7 @@
+1.20  2026-11-09
+    Set the host Internet Sharing DHCP lease time to 600 seconds during setup.
+    Document the host network setting for users and agents.
+
 1.19  2026-11-09
     Forward the exit status from copy, sync, and setup commands.
     Clarify headless display behaviour and VM lifecycle controls.
