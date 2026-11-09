@@ -9,7 +9,7 @@ Run `d2 macos.skill` to print these instructions. In a remote Bash session, sour
 ## Start and monitor
 
 1. Run `d2 macos.ps` to check the VM state and any previous startup result.
-2. Run `d2 macos.up` to create and start the VM headlessly. Use `--gui` to open a VM window, or `-v HOST_PATH:NAME` to share a host directory at `/Volumes/My Shared Files/NAME`. If Vagrant SSH fails but Tart Guest Agent is ready, startup runs the same provisioning script through the agent. Headless mode suppresses Tart's UI window; macOS still manages its guest `WindowServer`.
+2. Run `d2 macos.up` to create and start the VM headlessly. Use `--gui` to open a VM window, or `-v HOST_PATH:NAME` to share a host directory at `/Volumes/My Shared Files/NAME`. If Vagrant SSH fails but Tart Guest Agent is ready, startup transfers the provisioning script into the guest before running it through the agent. Headless mode suppresses Tart's UI window; macOS still manages its guest `WindowServer`.
    Startup and provisioning continue in the background.
 3. While startup is in progress, use `d2 macos.ps` to see the current step, elapsed time, last log output time, VM address, and SSH reachability. After a successful start, it also shows the previous startup duration and a rough estimate for the current run. The first run has no estimate until a successful duration is recorded.
 4. Use `d2 macos.logs -t -f --tail=30` to follow timestamped startup and provisioning output. The guest provisioning script also writes its command trace to `/tmp/provision.log`; after SSH is ready, retrieve it with `d2 macos.exec cat /tmp/provision.log`.

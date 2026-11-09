@@ -1,3 +1,7 @@
+1.26  2026-11-09
+    Stage the provisioning script in the guest before running it through Tart Guest Agent.
+    Prevent package installers from consuming the remaining provisioning commands.
+
 1.25  2026-11-09
     Find Vagrant in standard installation directories when the host PATH omits it.
     Document loading the Dashboard CLI environment in remote Bash sessions.

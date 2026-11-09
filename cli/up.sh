@@ -175,11 +175,17 @@ nohup /bin/bash -c '
       message="Running guest provisioning through Tart Guest Agent."
       printf "%s\n" "$message" >> "$log_file"
       printf "%s %s\n" "$(date -u "+%Y-%m-%dT%H:%M:%SZ")" "$message" >> "$timestamp_log_file"
-      tart exec -i "$vm_name" /bin/bash -s < ".vagrant/provision_guest.sh" 2>&1 | while IFS= read -r line || [ -n "$line" ]; do
-        printf "%s\n" "$line" >> "$log_file"
-        printf "%s %s\n" "$(date -u "+%Y-%m-%dT%H:%M:%SZ")" "$line" >> "$timestamp_log_file"
-      done
-      provision_exit=${PIPESTATUS[0]}
+      guest_script="/tmp/d2-macos-provision-$$.sh"
+      if tart exec -i "$vm_name" /usr/bin/tee "$guest_script" < ".vagrant/provision_guest.sh" >/dev/null 2>&1; then
+        tart exec "$vm_name" /bin/bash "$guest_script" 2>&1 | while IFS= read -r line || [ -n "$line" ]; do
+          printf "%s\n" "$line" >> "$log_file"
+          printf "%s %s\n" "$(date -u "+%Y-%m-%dT%H:%M:%SZ")" "$line" >> "$timestamp_log_file"
+        done
+        provision_exit=${PIPESTATUS[0]}
+        tart exec "$vm_name" /bin/rm -f "$guest_script" >/dev/null 2>&1 || true
+      else
+        provision_exit=$?
+      fi
       if [ "$provision_exit" -eq 0 ]; then
         vagrant_exit=0
         provisioned_via_agent=true
