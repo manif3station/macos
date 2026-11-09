@@ -1,3 +1,7 @@
+1.30  2026-11-09
+    Suppress NVM's internal Bash trace in provisioning logs while keeping install progress visible.
+    Preserve shell tracing for the remaining provisioning steps.
+
 1.29  2026-11-09
     Install only the local::lib CPAN module to reduce guest provisioning time.
     Update the documented Perl tools to match the smaller installation.

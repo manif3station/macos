@@ -150,6 +150,11 @@ Vagrant.configure("2") do |config|
     NVM_ONLY="alpha,lts,non-lts,iojs"
     export NVM_ONLY
     mkdir -p "$NVM_DIR"
+    # NVM is a shell library with many command substitutions. Keep its internal
+    # xtrace out of the user-facing provisioning log; NVM's own output reports
+    # download and install progress.
+    echo "Tracing paused while NVM installs Node.js 26 and 27..."
+    set +x
     source /opt/homebrew/opt/nvm/nvm.sh
     for NODE_MAJOR in 26 27; do
       NODE_INSTALLED=false
@@ -166,6 +171,7 @@ Vagrant.configure("2") do |config|
       fi
     done
     nvm alias default 27
+    set -x
 
     echo "=== Provisioning step 8: configure shell profiles ==="
     for PROFILE in "$HOME/.zprofile" "$HOME/.bash_profile"; do

@@ -1,6 +1,6 @@
 # macOS skill
 
-Version 1.29
+Version 1.30
 
 This Developer Dashboard skill starts and controls a macOS virtual machine with Tart. It only runs on macOS hosts, and Tart requires Apple silicon.
 
