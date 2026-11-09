@@ -5,7 +5,7 @@ usage() {
   cat <<'HELP'
 Usage: d2 macos.down [--help]
 
-Stop the macOS virtual machine and keep it available for the next start.
+Destroy the macOS virtual machine and remove its local VM state.
 
 Options:
   -h, --help  Show this help
@@ -46,4 +46,4 @@ if [ -f "$pid_file" ]; then
   fi
 fi
 
-exec vagrant halt
+exec vagrant destroy -f

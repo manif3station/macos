@@ -6,7 +6,9 @@ Vagrant.configure("2") do |config|
     tart.cpus = 4
     tart.memory = 6144
     tart.disk = 50
-    tart.gui = true
+    tart.gui = ENV['MACOS_VM_GUI'] == 'true'
+    tart.suspendable = true
+    tart.volumes = ENV.fetch('MACOS_VM_VOLUMES', '').split("\n").reject(&:empty?)
   end
 
   config.ssh.username = "admin"

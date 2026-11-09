@@ -238,6 +238,11 @@ fi
 
 echo "VM: $vm_name"
 echo "VM status: ${vagrant_state:-${tart_state:-not_created}}"
+if [ "$tart_state" = suspended ]; then
+  echo "VM is paused. Resume it with d2 macos.start, or destroy it with d2 macos.down."
+elif [ "$tart_state" = stopped ]; then
+  echo "VM is stopped. Destroy it with d2 macos.down before creating a new VM with d2 macos.up."
+fi
 if [ -f "$log_file" ]; then
   show_last_startup_duration
   if grep -q 'Timed out while waiting for the machine to boot' "$log_file"; then

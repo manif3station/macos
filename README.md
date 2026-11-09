@@ -26,7 +26,7 @@ Install the prerequisites if they are not already present:
 d2 macos.setup
 ```
 
-The VM runtime, Homebrew, and `d2` must be available on `PATH`. `macos.setup` trusts the Cirrus Labs tap, patches the Homebrew formula dependencies before installing Tart, installs the provider, and pulls the macOS image. `macos.up` opens the guest window and returns while the VM is provisioning in the background; check progress with `d2 macos.ps`.
+The VM runtime, Homebrew, and `d2` must be available on `PATH`. `macos.setup` trusts the Cirrus Labs tap, patches the Homebrew formula dependencies before installing Tart, installs the provider, and pulls the macOS image. `macos.up` runs headlessly by default and returns while the VM is provisioning in the background; pass `--gui` to open a VM window. Check progress with `d2 macos.ps`.
 
 Setup creates a VM-specific SSH key pair at `~/.ssh/d2macOs` and `~/.ssh/d2macOs.pub`. The VM configuration uses `MACOS_VM_SSH_KEY` when set; otherwise it uses `~/.ssh/d2macOs.pub`. Setup also pulls `ghcr.io/cirruslabs/macos-sequoia-base:latest`.
 
@@ -34,6 +34,11 @@ Setup creates a VM-specific SSH key pair at `~/.ssh/d2macOs` and `~/.ssh/d2macOs
 
 ```sh
 d2 macos.up
+d2 macos.up --gui
+d2 macos.up -v "$PWD":project
+d2 macos.up -v ./foobar:foobar
+d2 macos.stop
+d2 macos.start
 d2 macos.down
 d2 macos.exec <command>
 d2 macos.cp <host-path> vm:<vm-path>
@@ -48,7 +53,9 @@ d2 macos.skill
 
 `macos.skill` prints [SKILLS.md](SKILLS.md), which gives agents the workflow for checking, starting, monitoring, using, and stopping the VM.
 
-`macos.down` halts the VM while keeping it available for the next start. `macos.exec` runs a command over SSH in the running VM, using the configured macOS account. Quote shell expressions that should be interpreted inside the VM.
+`macos.stop` pauses the VM and preserves its running state. Resume it with `macos.start`. `macos.up` does not restart an existing stopped or paused VM; it reports the appropriate command instead. `macos.down` destroys the VM and removes its local state. `macos.exec` runs a command over SSH in the running VM, using the configured macOS account. Quote shell expressions that should be interpreted inside the VM.
+
+`macos.up -v HOST_PATH:NAME` shares a host directory with the guest at `/Volumes/My Shared Files/NAME`. Relative paths are resolved to an absolute host path, and multiple `-v` options are supported.
 
 `macos.cp` copies files and directories recursively in either direction. Mark the VM side with `vm:`, for example `d2 macos.cp ./notes.txt vm:/Users/admin/notes.txt` or `d2 macos.cp vm:/Users/admin/output.log ./output.log`.
 
@@ -76,6 +83,8 @@ Each command provides its own usage information:
 
 ```sh
 d2 macos.up --help
+d2 macos.stop --help
+d2 macos.start --help
 d2 macos.down --help
 d2 macos.exec --help
 d2 macos.cp --help
