@@ -4,7 +4,7 @@ Use these commands to control the macOS VM from the host. The commands only run 
 
 ## Before using the VM
 
-Run `d2 macos.skill` to print these instructions. Use `d2 macos.setup` if the VM SSH key or runtime setup is missing. Setup patches the tap formulae before installing Tart, sets the host Internet Sharing DHCP lease time to 600 seconds, then installs the provider and pulls the macOS image.
+Run `d2 macos.skill` to print these instructions. Use `d2 macos.setup` if the VM SSH key or runtime setup is missing. Setup creates the Vagrant SSH key, patches the tap formulae before installing Tart, sets the host Internet Sharing DHCP lease time to 600 seconds, then installs the provider and pulls the macOS image.
 
 ## Start and monitor
 
@@ -19,7 +19,7 @@ If startup times out, read the timeout result in `d2 macos.ps` and inspect `d2 m
 
 ## Run guest commands
 
-Use `d2 macos.exec <command>` to run a command in the VM. Quote shell expressions that must be interpreted inside the VM, for example:
+Use `d2 macos.exec <command>` to run a command in the VM through the Tart Guest Agent. Quote shell expressions that must be interpreted inside the VM, for example:
 
 The admin user's Bash profile exports `OPENSSL_PREFIX=/opt/homebrew/opt/openssl@3`.
 
@@ -28,7 +28,7 @@ d2 macos.exec 'sw_vers -productVersion'
 d2 macos.exec 'ps -A -o %cpu,%mem,pid,command'
 ```
 
-If `macos.exec` says the VM is not running, check `d2 macos.ps`. Use `d2 macos.up` only when creating a new VM. A paused VM must be resumed with `d2 macos.start`; `macos.up` will warn and refuse to restart an existing stopped or paused VM. Do not treat a running Tart process alone as proof that the VM is ready for SSH commands.
+If `macos.exec` says the VM is not running, check `d2 macos.ps`. Use `d2 macos.up` only when creating a new VM. A paused VM must be resumed with `d2 macos.start`; `macos.up` will warn and refuse to restart an existing stopped or paused VM. A running Tart process alone does not mean the guest agent is ready.
 
 The guest includes `htop`, Perl `local::lib`, Dist::Zilla, Devel::Cover, Devel::NYTProf, Perl::Tidy, and the other tools listed in the README. Use `d2 macos.exec htop` to inspect processes interactively.
 

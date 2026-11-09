@@ -5,7 +5,7 @@ usage() {
   cat <<'HELP'
 Usage: d2 macos.exec <command> [arguments...]
 
-Run a command in the macOS virtual machine over SSH.
+Run a command in the macOS virtual machine through the Tart Guest Agent.
 
 Options:
   -h, --help  Show this help
@@ -60,4 +60,14 @@ if [ "$state" != running ]; then
   exit 1
 fi
 
-exec vagrant ssh -c "source ~/.zprofile; $*"
+vm_name=$(awk -F '"' '/tart\.name[[:space:]]*=/ { print $2; exit }' Vagrantfile)
+if [ -z "$vm_name" ]; then
+  echo "macos.exec: could not determine the Tart VM name from Vagrantfile." >&2
+  exit 1
+fi
+
+guest_command="if [ -f ~/.zprofile ]; then source ~/.zprofile; fi; $*"
+if [ -t 0 ]; then
+  exec tart exec -i -t "$vm_name" /bin/bash -lc "$guest_command"
+fi
+exec tart exec -i "$vm_name" /bin/bash -lc "$guest_command"

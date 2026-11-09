@@ -28,7 +28,7 @@ d2 macos.setup
 
 The VM runtime, Homebrew, and `d2` must be available on `PATH`. `macos.setup` trusts the Cirrus Labs tap, patches the Homebrew formula dependencies before installing Tart, sets the host Internet Sharing DHCP lease time to 600 seconds, installs the provider, and pulls the macOS image. `macos.up` runs headlessly by default and returns while the VM is provisioning in the background; pass `--gui` to open a VM window. Headless mode suppresses Tart's UI window; macOS still manages its guest `WindowServer`. Check progress with `d2 macos.ps`.
 
-Setup creates a VM-specific SSH key pair at `~/.ssh/d2macOs` and `~/.ssh/d2macOs.pub`. The VM configuration uses `MACOS_VM_SSH_KEY` when set; otherwise it uses `~/.ssh/d2macOs.pub`. Setup also pulls `ghcr.io/cirruslabs/macos-sequoia-base:latest`.
+Setup creates a VM-specific SSH key pair at `~/.ssh/d2macOs` and `~/.ssh/d2macOs.pub`. Vagrant uses this pair for key-based SSH and file transfers; setup provisions the public key into the VM's `admin` account. The `dev` account uses `MACOS_VM_SSH_KEY` when set, otherwise `~/.ssh/d2macOs.pub`. Setup also pulls `ghcr.io/cirruslabs/macos-sequoia-base:latest`.
 
 ## Commands
 
@@ -53,7 +53,7 @@ d2 macos.skill
 
 `macos.skill` prints [SKILLS.md](SKILLS.md), which gives agents the workflow for checking, starting, monitoring, using, and stopping the VM.
 
-`macos.stop` pauses the VM and preserves its running state. Resume it with `macos.start`. `macos.up` does not restart an existing stopped or paused VM; it reports the appropriate command instead. `macos.down` destroys the VM and removes its local state. `macos.exec` runs a command over SSH in the running VM, using the configured macOS account. Quote shell expressions that should be interpreted inside the VM.
+`macos.stop` pauses the VM and preserves its running state. Resume it with `macos.start`. `macos.up` does not restart an existing stopped or paused VM; it reports the appropriate command instead. `macos.down` destroys the VM and removes its local state. `macos.exec` runs a command through the Tart Guest Agent in the running VM and supports interactive commands when attached to a terminal. Quote shell expressions that should be interpreted inside the VM.
 
 `macos.up -v HOST_PATH:NAME` shares a host directory with the guest at `/Volumes/My Shared Files/NAME`. Relative paths are resolved to an absolute host path, and multiple `-v` options are supported.
 
@@ -67,7 +67,7 @@ d2 macos.skill
 
 Each checkout uses a dedicated VM name so separate checkouts can run without colliding.
 
-When provisioning is complete, Homebrew is installed with Perl, cpanminus, htop, Git, Vim, tmux, OpenSSH, OpenSSL 3, curl, Go, Rust, Python 3, GCC, make, SDKMAN, and NVM. Perl `local::lib`, Dist::Zilla, Devel::Cover, Devel::NYTProf, and Perl::Tidy are installed for the admin user. SDKMAN installs Maven and Java 21 and 25. NVM installs Node.js 26 and the available Node.js 27 alpha release, including `npm` and `npx`. Python includes `venv`, and GCC provides C and C++ compilers. The admin user's Bash profile configures the editor, pager, terminal type, Apple Terminal integration, Perl local library path, and `OPENSSL_PREFIX=/opt/homebrew/opt/openssl@3`; Readline disables bracketed paste. `d2 macos.exec` waits until provisioning has finished before running commands.
+When provisioning is complete, Homebrew is installed with Perl, cpanminus, htop, Git, Vim, tmux, OpenSSH, OpenSSL 3, curl, Go, Rust, Python 3, GCC, make, SDKMAN, and NVM. Perl `local::lib`, Dist::Zilla, Devel::Cover, Devel::NYTProf, and Perl::Tidy are installed for the admin user. SDKMAN installs Maven and Java 21 and 25. NVM installs Node.js 26 and the available Node.js 27 alpha release, including `npm` and `npx`. Python includes `venv`, and GCC provides C and C++ compilers. The admin user's Bash profile configures the editor, pager, terminal type, Apple Terminal integration, Perl local library path, and `OPENSSL_PREFIX=/opt/homebrew/opt/openssl@3`; Readline disables bracketed paste. `d2 macos.exec` waits for an active startup job; after startup fails, it can still run guest-agent commands for diagnosis, though development tools may not be ready.
 
 Run `d2 macos.setup` before `macos.up`, `macos.down`, or `macos.exec` if the SSH public key is missing. `macos.exec` also asks you to run `d2 macos.up` first when the VM is not running.
 

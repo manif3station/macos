@@ -42,6 +42,10 @@ if [ -z "$vm_name" ]; then
   vm_name="default"
 fi
 
+guest_exec() {
+  tart exec "$vm_name" /bin/bash -lc "$1"
+}
+
 format_duration() {
   duration_value="$1"
   if [ "$duration_value" -ge 86400 ]; then
@@ -205,7 +209,7 @@ if [ -n "$vm_pid" ] || [ "$tart_state" = running ]; then
 
   if [ "$vagrant_state" = running ]; then
     echo "Vagrant state: running"
-    mac_version=$(vagrant ssh -c 'sw_vers -productVersion' 2>/dev/null || true)
+    mac_version=$(guest_exec 'sw_vers -productVersion' 2>/dev/null || true)
     if [ -n "$mac_version" ]; then
       echo "macOS version: $mac_version"
     else
@@ -213,10 +217,10 @@ if [ -n "$vm_pid" ] || [ "$tart_state" = running ]; then
     fi
     echo
     echo "Top guest processes by CPU:"
-    vagrant ssh -c 'ps -A -o %cpu,%mem,pid,command | tail -n +2 | sort -nr -k1,1 | head -n 10' || true
+    guest_exec 'ps -A -o %cpu,%mem,pid,command | tail -n +2 | sort -nr -k1,1 | head -n 10' || true
     echo
     echo "Top guest processes by memory:"
-    vagrant ssh -c 'ps -A -o %cpu,%mem,pid,command | tail -n +2 | sort -nr -k2,2 | head -n 10' || true
+    guest_exec 'ps -A -o %cpu,%mem,pid,command | tail -n +2 | sort -nr -k2,2 | head -n 10' || true
   else
     if [ -n "$vm_ip" ] && nc -G 2 -z "$vm_ip" 22 >/dev/null 2>&1; then
       echo "SSH port: reachable, but the VM manager has not completed its boot check."

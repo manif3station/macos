@@ -1,3 +1,8 @@
+1.22  2026-11-09
+    Run guest commands and process inspection through Tart Guest Agent.
+    Configure Vagrant key authentication for SSH and file transfers.
+    Document guest-agent access and startup failure diagnostics.
+
 1.21  2026-11-09
     Trace guest provisioning commands to /tmp/provision.log.
     Stream detailed provisioning output to macos.logs.

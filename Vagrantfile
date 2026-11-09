@@ -27,6 +27,18 @@ Vagrant.configure("2") do |config|
     raise Vagrant::Errors::VagrantError, "SSH public key is unavailable. Set MACOS_VM_SSH_KEY or run d2 macos.setup to create ~/.ssh/d2macOs.pub."
   end
 
+  # Use the setup-managed key for Vagrant SSH/SCP. Password auth remains
+  # available for the first provisioning pass, which installs this key.
+  MY_VAGRANT_SSH_KEY = File.expand_path('~/.ssh/d2macOs')
+  MY_VAGRANT_SSH_PUB_KEY = "#{MY_VAGRANT_SSH_KEY}.pub"
+  if !File.file?(MY_VAGRANT_SSH_KEY) || !File.file?(MY_VAGRANT_SSH_PUB_KEY)
+    raise Vagrant::Errors::VagrantError, "Vagrant SSH key is unavailable. Run d2 macos.setup to create ~/.ssh/d2macOs."
+  end
+
+  config.ssh.private_key_path = MY_VAGRANT_SSH_KEY
+  config.ssh.keys_only = false
+  config.ssh.insert_key = false
+
   # Shell provisioning script to set up user, SSH keys, and Homebrew
   config.vm.provision "shell", privileged: false, inline: <<-SHELL
     exec /bin/bash -s <<'BASH'
@@ -57,6 +69,18 @@ Vagrant.configure("2") do |config|
     sudo chown -R dev:staff "$DEV_HOME/.ssh"
     sudo chmod 700 "$DEV_HOME/.ssh"
     sudo chmod 600 "$DEV_HOME/.ssh/authorized_keys"
+
+    # Give Vagrant's SSH and SCP commands key-based access to the admin user.
+    ADMIN_SSH_DIR="$HOME/.ssh"
+    echo "Configuring key-based SSH access for admin..."
+    sudo mkdir -p "$ADMIN_SSH_DIR"
+    sudo touch "$ADMIN_SSH_DIR/authorized_keys"
+    if ! sudo grep -Fq "#{File.read(MY_VAGRANT_SSH_PUB_KEY).strip}" "$ADMIN_SSH_DIR/authorized_keys"; then
+      echo "#{File.read(MY_VAGRANT_SSH_PUB_KEY).strip}" | sudo tee -a "$ADMIN_SSH_DIR/authorized_keys" > /dev/null
+    fi
+    sudo chown -R admin:staff "$ADMIN_SSH_DIR"
+    sudo chmod 700 "$ADMIN_SSH_DIR"
+    sudo chmod 600 "$ADMIN_SSH_DIR/authorized_keys"
 
     # 3. Ensure Remote Login (SSH) is enabled on the system
     echo "=== Provisioning step 3: enable Remote Login ==="
