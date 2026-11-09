@@ -1,3 +1,9 @@
+1.24  2026-11-09
+    Run provisioning through the Tart Guest Agent when Vagrant SSH fails.
+    Keep Java and Node setup running if optional Perl modules fail.
+    Use Tart VM state for guest commands and pause/resume lifecycle handling.
+    Document agent-based provisioning and progress diagnostics.
+
 1.23  2026-11-09
     Remove orphaned Tart VMs when Vagrant no longer tracks their state.
     Document cleanup of stopped VM instances.

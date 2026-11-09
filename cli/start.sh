@@ -30,7 +30,18 @@ export MACOS_VM_GUI MACOS_VM_VOLUMES
 vm_name=$(awk -F '"' '/tart\.name[[:space:]]*=/ { print $2; exit }' Vagrantfile)
 vm_state=$(tart list 2>/dev/null | awk -v name="$vm_name" '$2 == name { print $NF; exit }' || true)
 case "$vm_state" in
-  suspended) exec vagrant resume ;;
+  suspended)
+    set -- "$vm_name" --suspendable
+    if [ "$MACOS_VM_GUI" != true ]; then
+      set -- "$@" --no-graphics
+    fi
+    while IFS= read -r volume; do
+      [ -n "$volume" ] && set -- "$@" "--dir=$volume"
+    done < .vagrant/runtime.volumes
+    nohup tart run "$@" > .vagrant/start.log 2>&1 < /dev/null &
+    echo "macos.start: resuming the macOS VM in the background (PID $!)."
+    echo "Log: .vagrant/start.log"
+    ;;
   running) echo "macos.start: VM is already running." ;;
   stopped)
     echo "macos.start: VM is stopped without a saved paused state. Remove it with d2 macos.down, then create it with d2 macos.up." >&2

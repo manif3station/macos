@@ -1,3 +1,5 @@
+require "fileutils"
+
 Vagrant.configure("2") do |config|
   # Configure Tart Provider Settings
   config.vm.provider :tart do |tart|
@@ -40,12 +42,13 @@ Vagrant.configure("2") do |config|
   config.ssh.insert_key = false
 
   # Shell provisioning script to set up user, SSH keys, and Homebrew
-  config.vm.provision "shell", privileged: false, inline: <<-SHELL
+  provision_script = <<-SHELL
     exec /bin/bash -s <<'BASH'
     PROVISION_LOG="/tmp/provision.log"
     : > "$PROVISION_LOG"
     exec > >(tee -a "$PROVISION_LOG") 2>&1
     PS4='+ '
+    set -e
     set -x
 
     echo "=== Starting custom VM Provisioning ==="
@@ -104,7 +107,9 @@ Vagrant.configure("2") do |config|
     if ! perl -I "$HOME/perl5/lib/perl5" -Mlocal::lib -e 'exit 0' >/dev/null 2>&1; then
       echo "=== Provisioning step 5: install Perl modules ==="
       echo "Installing local::lib for the admin user..."
-      cpanm --local-lib "$HOME/perl5" local::lib Dist::Zilla Devel::Cover Devel::NYTProf Perl::Tidy
+      if ! cpanm --local-lib "$HOME/perl5" local::lib Dist::Zilla Devel::Cover Devel::NYTProf Perl::Tidy; then
+        echo "Warning: one or more optional Perl modules failed to install; continuing with the rest of provisioning." >&2
+      fi
     fi
 
     SDKMAN_DIR="$("$BREW_BIN" --prefix sdkman-cli)/libexec"
@@ -227,4 +232,7 @@ BASH_PROFILE_BLOCK
     echo "=== Provisioning Complete! ==="
 BASH
   SHELL
+  FileUtils.mkdir_p(File.join(__dir__, ".vagrant"))
+  File.write(File.join(__dir__, ".vagrant", "provision_guest.sh"), provision_script)
+  config.vm.provision "shell", privileged: false, inline: provision_script
 end

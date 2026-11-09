@@ -168,6 +168,12 @@ if [ "$startup_active" = true ]; then
     echo "No previous successful startup duration is recorded yet."
   fi
   case "$last_line" in
+    *"Waiting for Tart Guest Agent"*)
+      echo "Waiting for: the guest agent after Vagrant SSH failed."
+      ;;
+    *"Running guest provisioning through Tart Guest Agent"*)
+      echo "Current step: guest tools and shell setup are being provisioned."
+      ;;
     *"Waiting for machine to boot"*)
       echo "Waiting for: macOS to boot and accept SSH connections."
       ;;
@@ -207,8 +213,8 @@ if [ -n "$vm_pid" ] || [ "$tart_state" = running ]; then
   [ -n "$vm_ip" ] && echo "VM IP: $vm_ip" || true
   show_last_startup_duration
 
-  if [ "$vagrant_state" = running ]; then
-    echo "Vagrant state: running"
+  if [ "$tart_state" = running ]; then
+    echo "Tart Guest Agent: available"
     mac_version=$(guest_exec 'sw_vers -productVersion' 2>/dev/null || true)
     if [ -n "$mac_version" ]; then
       echo "macOS version: $mac_version"

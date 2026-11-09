@@ -54,15 +54,14 @@ if [ -f "$pid_file" ]; then
   fi
 fi
 
-state=$(vagrant status --machine-readable | awk -F, '$3 == "state" { print $4; exit }')
-if [ "$state" != running ]; then
-  echo "macos.exec: the VM is not running. Run d2 macos.up first." >&2
-  exit 1
-fi
-
 vm_name=$(awk -F '"' '/tart\.name[[:space:]]*=/ { print $2; exit }' Vagrantfile)
 if [ -z "$vm_name" ]; then
   echo "macos.exec: could not determine the Tart VM name from Vagrantfile." >&2
+  exit 1
+fi
+state=$(tart list 2>/dev/null | awk -v name="$vm_name" '$2 == name { print $NF; exit }' || true)
+if [ "$state" != running ]; then
+  echo "macos.exec: the VM is not running. Run d2 macos.up first." >&2
   exit 1
 fi
 

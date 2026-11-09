@@ -42,7 +42,7 @@ fi
 vm_name=$(awk -F '"' '/tart\.name[[:space:]]*=/ { print $2; exit }' Vagrantfile)
 vm_state=$(tart list 2>/dev/null | awk -v name="$vm_name" '$2 == name { print $NF; exit }' || true)
 case "$vm_state" in
-  running) exec vagrant suspend ;;
+  running) exec tart suspend "$vm_name" ;;
   suspended) echo "macos.stop: VM is already paused." ;;
   stopped) echo "macos.stop: VM is stopped and has no saved paused state." >&2; exit 1 ;;
   *) echo "macos.stop: VM is not available (state: ${vm_state:-not_created})." >&2; exit 1 ;;
