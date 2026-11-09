@@ -54,7 +54,7 @@ d2 macos.skill
 
 `macos.rsync` synchronises files in either direction and accepts rsync options before the two paths. It uses archive mode by default and preserves standard trailing-slash behaviour. For example, `d2 macos.rsync -av ./project/ vm:/Users/admin/project/`. The `-e` and `--rsh` options are reserved for the VM connection.
 
-`macos.ps` reports the configured VM name, Tart process ID, IP address, macOS version, start time, and elapsed runtime. During startup it explains the current step, shows the last log line and how long ago it changed, and reports whether SSH is reachable. It also lists the guest processes with the highest CPU and memory use when the VM is ready.
+`macos.ps` reports the configured VM name, Tart process ID, IP address, macOS version, start time, and elapsed runtime. During startup it explains the current step, shows the last log line and how long ago it changed, and reports whether SSH is reachable. It also shows startup elapsed time and, after a successful start, the previous startup duration with a rough remaining-time estimate. The first run has no estimate until a successful startup duration is recorded. It lists the guest processes with the highest CPU and memory use when the VM is ready.
 
 `macos.logs` prints the startup log and exits by default. Use `-f` to follow it, `--tail N` or `--tail=N` to select the last N lines, and `-t` to read the timestamped log. These options can be combined.
 

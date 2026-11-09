@@ -1,3 +1,11 @@
+1.13  2026-11-09
+    Clarify startup duration and remaining-time estimates in the docs.
+    Explain that estimates are based on the previous successful startup.
+
+1.12  2026-11-09
+    Record VM startup duration and exit status.
+    Show startup elapsed time and an estimate from the previous success.
+
 1.11  2026-11-09
     Clarify both transfer directions in the command reference.
     Document cp, rsync, and skill instructions for agents.

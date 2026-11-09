@@ -33,6 +33,10 @@ mkdir -p .vagrant
 pid_file=".vagrant/up.pid"
 log_file=".vagrant/up.log"
 timestamp_log_file=".vagrant/up.timestamps.log"
+started_file=".vagrant/up.started"
+duration_file=".vagrant/up.duration"
+exit_file=".vagrant/up.exit"
+last_success_duration_file=".vagrant/up.last-success.duration"
 
 if [ -f "$pid_file" ]; then
   up_pid=$(cat "$pid_file")
@@ -54,13 +58,38 @@ fi
 
 : > "$log_file"
 : > "$timestamp_log_file"
+started_at=$(date +%s)
+printf '%s\n' "$started_at" > "$started_file"
+: > "$duration_file"
+: > "$exit_file"
 nohup /bin/bash -c '
   set -o pipefail
+  log_file="$1"
+  timestamp_log_file="$2"
+  started_at="$3"
+  duration_file="$4"
+  exit_file="$5"
+  last_success_duration_file="$6"
+
   vagrant up --provision 2>&1 | while IFS= read -r line || [ -n "$line" ]; do
-    printf "%s\n" "$line" >> "$1"
-    printf "%s %s\n" "$(date -u "+%Y-%m-%dT%H:%M:%SZ")" "$line" >> "$2"
+    printf "%s\n" "$line" >> "$log_file"
+    printf "%s %s\n" "$(date -u "+%Y-%m-%dT%H:%M:%SZ")" "$line" >> "$timestamp_log_file"
   done
-' d2-macos-up "$log_file" "$timestamp_log_file" > /dev/null 2>&1 < /dev/null &
+  vagrant_exit=${PIPESTATUS[0]}
+  finished_at=$(date +%s)
+  duration=$((finished_at - started_at))
+  printf "%s\n" "$duration" > "$duration_file"
+  printf "%s\n" "$vagrant_exit" > "$exit_file"
+  if [ "$vagrant_exit" -eq 0 ]; then
+    printf "%s\n" "$duration" > "$last_success_duration_file"
+    summary="Startup completed successfully in ${duration}s."
+  else
+    summary="Startup failed with exit code $vagrant_exit after ${duration}s."
+  fi
+  printf "%s\n" "$summary" >> "$log_file"
+  printf "%s %s\n" "$(date -u "+%Y-%m-%dT%H:%M:%SZ")" "$summary" >> "$timestamp_log_file"
+  exit "$vagrant_exit"
+' d2-macos-up "$log_file" "$timestamp_log_file" "$started_at" "$duration_file" "$exit_file" "$last_success_duration_file" > /dev/null 2>&1 < /dev/null &
 up_pid=$!
 printf '%s\n' "$up_pid" > "$pid_file"
 echo "macos.up: starting the macOS VM in the background (PID $up_pid)."

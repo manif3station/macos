@@ -5,7 +5,8 @@ usage() {
   cat <<'HELP'
 Usage: d2 macos.ps [--help]
 
-Show VM state, startup progress, the latest log activity, and guest processes.
+Show VM state, startup elapsed time, a previous-startup estimate, latest log
+activity, and guest processes.
 
 Options:
   -h, --help  Show this help
@@ -32,10 +33,70 @@ cd "$(dirname "$0")/.."
 
 pid_file=".vagrant/up.pid"
 log_file=".vagrant/up.log"
+started_file=".vagrant/up.started"
+duration_file=".vagrant/up.duration"
+exit_file=".vagrant/up.exit"
+last_success_duration_file=".vagrant/up.last-success.duration"
 vm_name=$(awk -F '"' '/tart\.name[[:space:]]*=/ { print $2; exit }' Vagrantfile)
 if [ -z "$vm_name" ]; then
   vm_name="default"
 fi
+
+format_duration() {
+  duration_value="$1"
+  if [ "$duration_value" -ge 86400 ]; then
+    printf '%sd %sh %sm' "$((duration_value / 86400))" "$(((duration_value % 86400) / 3600))" "$(((duration_value % 3600) / 60))"
+  elif [ "$duration_value" -ge 3600 ]; then
+    printf '%sh %sm %ss' "$((duration_value / 3600))" "$(((duration_value % 3600) / 60))" "$((duration_value % 60))"
+  elif [ "$duration_value" -ge 60 ]; then
+    printf '%sm %ss' "$((duration_value / 60))" "$((duration_value % 60))"
+  else
+    printf '%ss' "$duration_value"
+  fi
+}
+
+last_success_duration=""
+if [ -f "$last_success_duration_file" ]; then
+  candidate_duration=$(cat "$last_success_duration_file")
+  case "$candidate_duration" in
+    ''|*[!0-9]*) ;;
+    *) last_success_duration="$candidate_duration" ;;
+  esac
+fi
+
+startup_started_at=""
+if [ -f "$started_file" ]; then
+  candidate_started_at=$(cat "$started_file")
+  case "$candidate_started_at" in
+    ''|*[!0-9]*) ;;
+    *) startup_started_at="$candidate_started_at" ;;
+  esac
+fi
+if [ -z "$startup_started_at" ] && [ -f ".vagrant/up.timestamps.log" ]; then
+  first_log_timestamp=$(head -n 1 .vagrant/up.timestamps.log | awk '{ print $1 }')
+  startup_started_at=$(date -j -f '%Y-%m-%dT%H:%M:%SZ' "$first_log_timestamp" +%s 2>/dev/null || true)
+fi
+now=$(date +%s)
+startup_elapsed_seconds=""
+if [ -n "$startup_started_at" ]; then
+  startup_elapsed_seconds=$((now - startup_started_at))
+fi
+
+show_last_startup_duration() {
+  if [ ! -f "$duration_file" ]; then
+    return
+  fi
+  duration_value=$(cat "$duration_file")
+  exit_value=$(cat "$exit_file" 2>/dev/null || true)
+  case "$duration_value" in
+    ''|*[!0-9]*) return ;;
+  esac
+  case "$exit_value" in
+    0) echo "Last startup completed in $(format_duration "$duration_value")." ;;
+    ''|*[!0-9]*) ;;
+    *) echo "Last startup failed after $(format_duration "$duration_value") (exit code $exit_value)." ;;
+  esac
+}
 
 up_pid=""
 startup_active=false
@@ -69,7 +130,6 @@ if [ -f "$log_file" ]; then
   last_line=$(tail -n 1 "$log_file" | sed 's/^[[:space:]]*default: //; s/^[[:space:]]*//')
   last_line=$(printf '%s' "$last_line" | cut -c 1-220)
   log_mtime=$(stat -f %m "$log_file" 2>/dev/null || echo 0)
-  now=$(date +%s)
   if [ "$log_mtime" -gt 0 ]; then
     age=$((now - log_mtime))
     if [ "$age" -lt 60 ]; then
@@ -85,7 +145,24 @@ fi
 if [ "$startup_active" = true ]; then
   elapsed=$(ps -p "$up_pid" -o etime= | sed 's/^[[:space:]]*//')
   echo "VM: $vm_name"
-  echo "Startup: in progress (PID $up_pid; elapsed $elapsed)"
+  echo "Startup: in progress (PID $up_pid)"
+  if [ -n "$startup_elapsed_seconds" ]; then
+    echo "Startup elapsed: $(format_duration "$startup_elapsed_seconds")"
+  else
+    echo "Startup elapsed: $elapsed"
+  fi
+  if [ -n "$last_success_duration" ] && [ -n "$startup_elapsed_seconds" ]; then
+    echo "Previous successful startup took $(format_duration "$last_success_duration")."
+    if [ "$startup_elapsed_seconds" -lt "$last_success_duration" ]; then
+      estimate_remaining=$((last_success_duration - startup_elapsed_seconds))
+      echo "Estimated remaining: about $(format_duration "$estimate_remaining"), based on that startup. Actual time can vary."
+    else
+      estimate_overrun=$((startup_elapsed_seconds - last_success_duration))
+      echo "Current startup has exceeded that time by $(format_duration "$estimate_overrun"); no reliable remaining-time estimate is available."
+    fi
+  elif [ -z "$last_success_duration" ]; then
+    echo "No previous successful startup duration is recorded yet."
+  fi
   case "$last_line" in
     *"Waiting for machine to boot"*)
       echo "Waiting for: macOS to boot and accept SSH connections."
@@ -124,6 +201,7 @@ if [ -n "$vm_pid" ] || [ "$tart_state" = running ]; then
     echo "VM process PID: unavailable"
   fi
   [ -n "$vm_ip" ] && echo "VM IP: $vm_ip" || true
+  show_last_startup_duration
 
   if [ "$vagrant_state" = running ]; then
     echo "Vagrant state: running"
@@ -161,6 +239,7 @@ fi
 echo "VM: $vm_name"
 echo "VM status: ${vagrant_state:-${tart_state:-not_created}}"
 if [ -f "$log_file" ]; then
+  show_last_startup_duration
   if grep -q 'Timed out while waiting for the machine to boot' "$log_file"; then
     echo "Startup result: timed out waiting for the guest to become ready."
   fi
