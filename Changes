@@ -1,3 +1,10 @@
+1.28  2026-11-09
+    Run the provisioning script as a plain Bash file so package installers cannot consume later steps.
+    Pass the same script as a Bash argument through Vagrant and as a staged file through Tart.
+
+1.27  2026-11-09
+    Configure Vagrant and Tart Guest Agent to use the same Bash script.
+
 1.26  2026-11-09
     Stage the provisioning script in the guest before running it through Tart Guest Agent.
     Prevent package installers from consuming the remaining provisioning commands.

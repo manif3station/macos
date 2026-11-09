@@ -1,6 +1,6 @@
 # macOS skill
 
-Version 1.26
+Version 1.28
 
 This Developer Dashboard skill starts and controls a macOS virtual machine with Tart. It only runs on macOS hosts, and Tart requires Apple silicon.
 
@@ -30,7 +30,7 @@ d2 macos.setup
 
 If Vagrant is installed in `/usr/local/bin` or `/opt/vagrant/bin`, the commands add that location when it is missing from `PATH`.
 
-The VM runtime, Homebrew, and `d2` must be available on `PATH`. `macos.setup` trusts the Cirrus Labs tap, patches the Homebrew formula dependencies before installing Tart, sets the host Internet Sharing DHCP lease time to 600 seconds, installs the provider, and pulls the macOS image. `macos.up` runs headlessly by default and returns while the VM is provisioning in the background; pass `--gui` to open a VM window. If Vagrant SSH fails but the Tart Guest Agent is ready, `macos.up` transfers the provisioning script into the guest before running it through the agent. Follow this work with `d2 macos.ps` and `d2 macos.logs -t -f`; wait for the provisioning-complete message before relying on the pre-installed tools. Headless mode suppresses Tart's UI window; macOS still manages its guest `WindowServer`.
+The VM runtime, Homebrew, and `d2` must be available on `PATH`. `macos.setup` trusts the Cirrus Labs tap, patches the Homebrew formula dependencies before installing Tart, sets the host Internet Sharing DHCP lease time to 600 seconds, installs the provider, and pulls the macOS image. `macos.up` runs headlessly by default and returns while the VM is provisioning in the background; pass `--gui` to open a VM window. Vagrant runs the plain Bash script without sharing its input with package installers; if Vagrant SSH fails but the Tart Guest Agent is ready, `macos.up` stages and runs the same script through the agent. Follow this work with `d2 macos.ps` and `d2 macos.logs -t -f`; wait for the provisioning-complete message before relying on the pre-installed tools. Headless mode suppresses Tart's UI window; macOS still manages its guest `WindowServer`.
 
 Setup creates a VM-specific SSH key pair at `~/.ssh/d2macOs` and `~/.ssh/d2macOs.pub`. Vagrant uses this pair for key-based SSH and file transfers; setup provisions the public key into the VM's `admin` account. The `dev` account uses `MACOS_VM_SSH_KEY` when set, otherwise `~/.ssh/d2macOs.pub`. Setup also pulls `ghcr.io/cirruslabs/macos-sequoia-base:latest`.
 

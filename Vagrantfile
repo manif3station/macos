@@ -1,4 +1,5 @@
 require "fileutils"
+require "shellwords"
 
 Vagrant.configure("2") do |config|
   # Configure Tart Provider Settings
@@ -43,7 +44,6 @@ Vagrant.configure("2") do |config|
 
   # Shell provisioning script to set up user, SSH keys, and Homebrew
   provision_script = <<-SHELL
-    exec /bin/bash -s <<'BASH'
     PROVISION_LOG="/tmp/provision.log"
     : > "$PROVISION_LOG"
     exec > >(tee -a "$PROVISION_LOG") 2>&1
@@ -230,9 +230,8 @@ BASH_PROFILE_BLOCK
     fi
 
     echo "=== Provisioning Complete! ==="
-BASH
   SHELL
   FileUtils.mkdir_p(File.join(__dir__, ".vagrant"))
   File.write(File.join(__dir__, ".vagrant", "provision_guest.sh"), provision_script)
-  config.vm.provision "shell", privileged: false, inline: provision_script
+  config.vm.provision "shell", privileged: false, inline: "exec /bin/bash -c #{Shellwords.escape(provision_script)}"
 end
