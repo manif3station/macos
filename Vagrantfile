@@ -173,6 +173,9 @@ export TERM=xterm-256color
 bind 'set enable-bracketed-paste off'
 BASH_PROFILE_BLOCK
     fi
+    if ! grep -Fqx 'export OPENSSL_PREFIX=/opt/homebrew/opt/openssl@3' "$BASH_PROFILE"; then
+      echo 'export OPENSSL_PREFIX=/opt/homebrew/opt/openssl@3' >> "$BASH_PROFILE"
+    fi
 
     INPUTRC="$HOME/.inputrc"
     touch "$INPUTRC"

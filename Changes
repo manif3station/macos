@@ -1,3 +1,7 @@
+1.15  2026-11-09
+    Export the Homebrew OpenSSL 3 prefix in the admin shell profile.
+    Document the new environment variable for users and agents.
+
 1.14  2026-11-09
     Install htop and additional Perl development modules.
     Document the graphical guest window and available development tools.

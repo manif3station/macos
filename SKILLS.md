@@ -21,6 +21,8 @@ If startup times out, read the timeout result in `d2 macos.ps` and inspect `d2 m
 
 Use `d2 macos.exec <command>` to run a command in the VM. Quote shell expressions that must be interpreted inside the VM, for example:
 
+The admin user's Bash profile exports `OPENSSL_PREFIX=/opt/homebrew/opt/openssl@3`.
+
 ```sh
 d2 macos.exec 'sw_vers -productVersion'
 d2 macos.exec 'ps -A -o %cpu,%mem,pid,command'
