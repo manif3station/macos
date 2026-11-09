@@ -1,3 +1,7 @@
+1.19  2026-11-09
+    Forward the exit status from copy, sync, and setup commands.
+    Clarify headless display behaviour and VM lifecycle controls.
+
 1.18  2026-11-09
     Add headless and graphical startup modes with host directory mounts.
     Add pause and resume commands; make down destroy the VM.

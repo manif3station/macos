@@ -26,7 +26,7 @@ Install the prerequisites if they are not already present:
 d2 macos.setup
 ```
 
-The VM runtime, Homebrew, and `d2` must be available on `PATH`. `macos.setup` trusts the Cirrus Labs tap, patches the Homebrew formula dependencies before installing Tart, installs the provider, and pulls the macOS image. `macos.up` runs headlessly by default and returns while the VM is provisioning in the background; pass `--gui` to open a VM window. Check progress with `d2 macos.ps`.
+The VM runtime, Homebrew, and `d2` must be available on `PATH`. `macos.setup` trusts the Cirrus Labs tap, patches the Homebrew formula dependencies before installing Tart, installs the provider, and pulls the macOS image. `macos.up` runs headlessly by default and returns while the VM is provisioning in the background; pass `--gui` to open a VM window. Headless mode suppresses Tart's UI window; macOS still manages its guest `WindowServer`. Check progress with `d2 macos.ps`.
 
 Setup creates a VM-specific SSH key pair at `~/.ssh/d2macOs` and `~/.ssh/d2macOs.pub`. The VM configuration uses `MACOS_VM_SSH_KEY` when set; otherwise it uses `~/.ssh/d2macOs.pub`. Setup also pulls `ghcr.io/cirruslabs/macos-sequoia-base:latest`.
 
@@ -57,9 +57,9 @@ d2 macos.skill
 
 `macos.up -v HOST_PATH:NAME` shares a host directory with the guest at `/Volumes/My Shared Files/NAME`. Relative paths are resolved to an absolute host path, and multiple `-v` options are supported.
 
-`macos.cp` copies files and directories recursively in either direction. Mark the VM side with `vm:`, for example `d2 macos.cp ./notes.txt vm:/Users/admin/notes.txt` or `d2 macos.cp vm:/Users/admin/output.log ./output.log`.
+`macos.cp` copies files and directories recursively in either direction and returns the copy command's exit status. Mark the VM side with `vm:`, for example `d2 macos.cp ./notes.txt vm:/Users/admin/notes.txt` or `d2 macos.cp vm:/Users/admin/output.log ./output.log`.
 
-`macos.rsync` synchronises files in either direction and accepts rsync options before the two paths. It uses archive mode by default and preserves standard trailing-slash behaviour. For example, `d2 macos.rsync -av ./project/ vm:/Users/admin/project/`. The `-e` and `--rsh` options are reserved for the VM connection.
+`macos.rsync` synchronises files in either direction and accepts rsync options before the two paths. It uses archive mode by default, preserves standard trailing-slash behaviour, and returns rsync's exit status. For example, `d2 macos.rsync -av ./project/ vm:/Users/admin/project/`. The `-e` and `--rsh` options are reserved for the VM connection.
 
 `macos.ps` reports the configured VM name, Tart process ID, IP address, macOS version, start time, and elapsed runtime. During startup it explains the current step, shows the last log line and how long ago it changed, and reports whether SSH is reachable. It also shows startup elapsed time and, after a successful start, the previous startup duration with a rough remaining-time estimate. The first run has no estimate until a successful startup duration is recorded. It lists the guest processes with the highest CPU and memory use when the VM is ready.
 

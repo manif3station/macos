@@ -9,7 +9,7 @@ Run `d2 macos.skill` to print these instructions. Use `d2 macos.setup` if the VM
 ## Start and monitor
 
 1. Run `d2 macos.ps` to check the VM state and any previous startup result.
-2. Run `d2 macos.up` to create and start the VM headlessly. Use `--gui` to open a VM window, or `-v HOST_PATH:NAME` to share a host directory at `/Volumes/My Shared Files/NAME`.
+2. Run `d2 macos.up` to create and start the VM headlessly. Use `--gui` to open a VM window, or `-v HOST_PATH:NAME` to share a host directory at `/Volumes/My Shared Files/NAME`. Headless mode suppresses Tart's UI window; macOS still manages its guest `WindowServer`.
    Startup and provisioning continue in the background.
 3. While startup is in progress, use `d2 macos.ps` to see the current step, elapsed time, last log output time, VM address, and SSH reachability. After a successful start, it also shows the previous startup duration and a rough estimate for the current run. The first run has no estimate until a successful duration is recorded.
 4. Use `d2 macos.logs -t -f --tail=30` to follow timestamped startup output.
@@ -43,7 +43,7 @@ d2 macos.rsync -av ./project/ vm:/Users/admin/project/
 d2 macos.rsync -av vm:/Users/admin/results/ ./results/
 ```
 
-`macos.cp` copies directories recursively. `macos.rsync` accepts rsync options before the paths and uses archive mode by default. Keep trailing slashes when their standard rsync meaning is needed. Its `-e` and `--rsh` options are reserved for the VM connection.
+`macos.cp` copies directories recursively. `macos.rsync` accepts rsync options before the paths and uses archive mode by default. Both commands return the wrapped copy command's exit status. Keep trailing slashes when their standard rsync meaning is needed. Its `-e` and `--rsh` options are reserved for the VM connection.
 
 ## Stop the VM
 
