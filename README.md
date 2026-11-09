@@ -19,9 +19,9 @@ brew install openai/tools/tart
 d2 macos.setup
 ```
 
-The VM runtime must be installed and available on `PATH`. `macos.setup` installs the Tart provider for it.
+The VM runtime, Tart, and `d2` must be available on `PATH`. `macos.setup` installs the Tart provider and pulls the macOS image.
 
-The VM configuration reads `MACOS_VM_SSH_KEY` from the environment or from `d2 env`. The macOS image is pulled from `ghcr.io/cirruslabs/macos-sequoia-base` when needed.
+Setup creates a VM-specific SSH key pair at `~/.ssh/d2macOs` and `~/.ssh/d2macOs.pub`. The VM configuration uses `MACOS_VM_SSH_KEY` when set; otherwise it uses `~/.ssh/d2macOs.pub`. Setup also pulls `ghcr.io/cirruslabs/macos-sequoia-base:latest`.
 
 ## Commands
 
@@ -33,6 +33,8 @@ d2 macos.setup
 ```
 
 `macos.down` halts the VM while keeping it available for the next start. `macos.exec` runs a command over SSH in the running VM, using the configured macOS account. Quote shell expressions that should be interpreted inside the VM.
+
+Run `d2 macos.setup` before `macos.up`, `macos.down`, or `macos.exec` if the SSH public key is missing. `macos.exec` also asks you to run `d2 macos.up` first when the VM is not running.
 
 Examples:
 

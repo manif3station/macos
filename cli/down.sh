@@ -23,5 +23,10 @@ if [ "$(uname -s)" != Darwin ]; then
   exit 1
 fi
 
+if [ -z "${MACOS_VM_SSH_KEY:-}" ] && [ ! -f "$HOME/.ssh/d2macOs.pub" ]; then
+  echo "macos.down: SSH public key not found. Run d2 macos.setup first." >&2
+  exit 1
+fi
+
 cd "$(dirname "$0")/.."
 exec vagrant halt

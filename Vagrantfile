@@ -12,17 +12,17 @@ Vagrant.configure("2") do |config|
   config.ssh.username = "admin"
   config.ssh.password = "admin"
 
-  # Read the key from the environment or the local d2 environment.
-  MY_SSH_PUB_KEY = ENV['MACOS_VM_SSH_KEY'] || begin
-    d2_output = IO.popen(["d2", "env"], &:read)
-    d2_output[/^MACOS_VM_SSH_KEY=(.*)$/, 1]
-  rescue Errno::ENOENT
-    nil
+  # Prefer an explicit public key; otherwise use the key created by macos.setup.
+  MY_SSH_PUB_KEY = if ENV['MACOS_VM_SSH_KEY'] && !ENV['MACOS_VM_SSH_KEY'].strip.empty?
+    ENV['MACOS_VM_SSH_KEY']
+  else
+    default_key_path = File.expand_path('~/.ssh/d2macOs.pub')
+    File.read(default_key_path).strip if File.file?(default_key_path)
   end
 
   # Safety Check: Halt deployment if the environment variable is missing
   if MY_SSH_PUB_KEY.nil? || MY_SSH_PUB_KEY.strip.empty?
-    raise Vagrant::Errors::VagrantError, "MACOS_VM_SSH_KEY is unavailable. Set it in the environment or configure it with d2 env."
+    raise Vagrant::Errors::VagrantError, "SSH public key is unavailable. Set MACOS_VM_SSH_KEY or run d2 macos.setup to create ~/.ssh/d2macOs.pub."
   end
 
   # Shell provisioning script to set up user, SSH keys, and Homebrew
