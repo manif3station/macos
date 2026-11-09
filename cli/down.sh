@@ -46,4 +46,23 @@ if [ -f "$pid_file" ]; then
   fi
 fi
 
+vagrant_state=$(vagrant status --machine-readable 2>/dev/null | awk -F, '$3 == "state" { print $4; exit }' || true)
+if [ "$vagrant_state" = not_created ]; then
+  vm_name=$(awk -F '"' '/tart\.name[[:space:]]*=/ { print $2; exit }' Vagrantfile)
+  tart_state=$(tart list 2>/dev/null | awk -v name="$vm_name" '$2 == name { print $NF; exit }' || true)
+  case "$tart_state" in
+    running)
+      echo "macos.down: stopping the untracked Tart VM before removing it."
+      tart stop "$vm_name"
+      ;;
+    stopped|suspended) ;;
+    *)
+      echo "macos.down: no VM is registered with Vagrant or present in Tart."
+      exit 0
+      ;;
+  esac
+  echo "macos.down: removing the untracked Tart VM '$vm_name'."
+  exec tart delete "$vm_name"
+fi
+
 exec vagrant destroy -f

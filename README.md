@@ -53,7 +53,7 @@ d2 macos.skill
 
 `macos.skill` prints [SKILLS.md](SKILLS.md), which gives agents the workflow for checking, starting, monitoring, using, and stopping the VM.
 
-`macos.stop` pauses the VM and preserves its running state. Resume it with `macos.start`. `macos.up` does not restart an existing stopped or paused VM; it reports the appropriate command instead. `macos.down` destroys the VM and removes its local state. `macos.exec` runs a command through the Tart Guest Agent in the running VM and supports interactive commands when attached to a terminal. Quote shell expressions that should be interpreted inside the VM.
+`macos.stop` pauses the VM and preserves its running state. Resume it with `macos.start`. `macos.up` does not restart an existing stopped or paused VM; it reports the appropriate command instead. `macos.down` destroys the VM and removes its local state, including a Tart VM left behind if Vagrant metadata is missing. `macos.exec` runs a command through the Tart Guest Agent in the running VM and supports interactive commands when attached to a terminal. Quote shell expressions that should be interpreted inside the VM.
 
 `macos.up -v HOST_PATH:NAME` shares a host directory with the guest at `/Volumes/My Shared Files/NAME`. Relative paths are resolved to an absolute host path, and multiple `-v` options are supported.
 

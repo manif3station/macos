@@ -47,4 +47,4 @@ d2 macos.rsync -av vm:/Users/admin/results/ ./results/
 
 ## Stop the VM
 
-Run `d2 macos.stop` to pause the VM while preserving its current state, then `d2 macos.start` to resume it. Run `d2 macos.down` to destroy the VM and remove its local state.
+Run `d2 macos.stop` to pause the VM while preserving its current state, then `d2 macos.start` to resume it. Run `d2 macos.down` to destroy the VM and remove its local state. If Vagrant metadata is missing, `macos.down` removes the matching orphaned Tart VM too.
